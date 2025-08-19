@@ -76,7 +76,7 @@ docker compose run --rm backend python manage.py test -v 2
 ## ✅ Статус сборок
 
 [![CI (unit tests)](https://github.com/Letruke-007/diplom/actions/workflows/ci.yml/badge.svg)](https://github.com/Letruke-007/diplom/actions/workflows/ci.yml)  
-[![CI (docker tests)](https://github.com/Letruke-007/diplom/actions/workflows/docker-tests.yml/badge.svg)](https://github.com/Letruke-007/diplom/actions/workflows/docker-tests.yml)
+[![CI (docker tests)](https://github.com/Letruke-007/diplom/actions/workflows/docker-tests.yml/badge.svg)](https://github.com/Letruke-007/diplom/actions/workflows/docker-ci.yml)
 
 ## 🚀 Deployment
 
@@ -106,3 +106,4 @@ docker compose run --rm backend python manage.py test -v 2
    ```
 
 Теперь приложение доступно по адресу сервера (например, `https://mycloud.example.com`).
+
