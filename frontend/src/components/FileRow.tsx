@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 
-
 // dev-only console wrappers
 const dev = (fn: keyof Console) =>
   (...args: any[]) => { if (import.meta?.env?.DEV) (console[fn] as any)(...args); };
@@ -9,7 +8,6 @@ const debugDev = dev('debug');
 const logDev   = dev('log');
 const warnDev  = dev('warn');
 const errorDev = dev('error');
-
 
 type FileItem = {
   id: number;
@@ -22,12 +20,29 @@ type FileItem = {
   public_token?: string | null;
 };
 
-
 interface Props {
   file: FileItem;
   onFileUpdated: (updated: FileItem) => void;
   onFileDeleted: (id: number) => void;
 }
+
+// --- локальные стили для компактных икон-кнопок ---
+const iconBtnStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 36,
+  height: 36,
+  borderRadius: 10,
+  border: "1px solid #d0d5dd",
+  background: "#fff",
+  textDecoration: "none",
+};
+const iconBtnDangerStyle: React.CSSProperties = {
+  ...iconBtnStyle,
+  borderColor: "#fda4a4",
+  background: "#fff0f0",
+};
 
 // --- CSRF helpers ---
 function getCookie(name: string): string | undefined {
@@ -111,7 +126,7 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
     if (!trimmed) return trimmed;
 
     const dot = trimmed.lastIndexOf(".");
-    const hasExt = dot > 0 && dot < trimmed.length - 1;
+    the hasExt = dot > 0 && dot < trimmed.length - 1;
     if (hasExt) return trimmed;
 
     const oldDot = fromName.lastIndexOf(".");
@@ -218,7 +233,6 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
     }
   };
 
-
   // ----- Публичные ссылки -----
   const issuePublicLink = async (): Promise<{ url: string; token: string }> => {
     const csrfToken = await ensureCsrf();
@@ -248,7 +262,6 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
     const url = (data.url as string | undefined) ?? `${location.origin}/d/${linkToken}`;
     return { url, token: linkToken };
   };
-
 
   const revokePublicLink = async () => {
     const token = await ensureCsrf();
@@ -310,7 +323,6 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
       alert("Не удалось создать/скопировать ссылку");
     }
   };
-
 
   const handleRevokeLink = async () => {
     if (!confirm("Удалить публичную ссылку?")) return;
@@ -472,7 +484,16 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
 
       {/* Публичная ссылка */}
       <td>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+            alignItems: "center",
+            maxWidth: "100%",
+            lineHeight: 1.2,
+          }}
+        >
           <span
             style={{ textDecoration: "underline", cursor: "pointer" }}
             onClick={handleCreateOrCopyLink}
@@ -509,16 +530,23 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
       <td>
         <div style={{ display: "flex", gap: 8 }}>
           <a
-            className="btn"
             href={`/api/files/${file.id}/download`}
             title="Скачать"
-            style={{ textDecoration: "none" }}
+            aria-label="Скачать"
+            rel="noopener noreferrer"
+            style={iconBtnStyle}
           >
-            Скачать
+            ⬇️
           </a>
-           
-          <button className="btn btn--danger" onClick={handleDelete} disabled={busy} title="Удалить">
-            Удалить
+          <button
+            onClick={handleDelete}
+            disabled={busy}
+            title="Удалить"
+            aria-label="Удалить"
+            type="button"
+            style={iconBtnDangerStyle}
+          >
+            🗑️
           </button>
         </div>
       </td>
