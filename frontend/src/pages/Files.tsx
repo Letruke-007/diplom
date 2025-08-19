@@ -44,11 +44,13 @@ export default function Files() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Имя</th>
+                  <th>Имя файла</th>
                   <th>Размер</th>
                   <th>Загружен</th>
                   <th>Скачан</th>
                   <th>Комментарий</th>
+                  <th>Публичная ссылка</th>
+                  
                   <th style={{ width: 180 }}>Действия</th>
                 </tr>
               </thead>
@@ -64,9 +66,8 @@ export default function Files() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: 12 }}>
-                      Нет файлов
-                    </td>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: 12 }}></td>
+                      Нет файлов                    
                   </tr>
                 )}
               </tbody>

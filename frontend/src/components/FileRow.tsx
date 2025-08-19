@@ -1,14 +1,27 @@
 import React, { useState } from "react";
 
+
+// dev-only console wrappers
+const dev = (fn: keyof Console) =>
+  (...args: any[]) => { if (import.meta?.env?.DEV) (console[fn] as any)(...args); };
+
+const debugDev = dev('debug');
+const logDev   = dev('log');
+const warnDev  = dev('warn');
+const errorDev = dev('error');
+
+
 type FileItem = {
   id: number;
   original_name: string;
   size: number;
   uploaded_at: string;
+  last_downloaded_at: string | null;
   comment: string;
   has_public_link: boolean;
   public_token?: string | null;
 };
+
 
 interface Props {
   file: FileItem;
@@ -54,7 +67,7 @@ async function smartDetailFetch(
   let resp = await fetch(primary, init);
   if (resp.status === 404) {
     const fallback = `${primary}/`;
-    console.debug("[smartDetailFetch] 404 on", primary, "→ retry", fallback);
+    debugDev("smartDetailFetch: 404 -> retry with trailing slash:", fallback);
     resp = await fetch(fallback, init);
   }
   return resp;
@@ -76,7 +89,7 @@ async function smartActionFetch(
   for (const url of variants) {
     const resp = await fetch(url, init);
     if (resp.status !== 404) return resp;
-    console.debug("[smartActionFetch] 404 on", url);
+    debugDev("smartActionFetch: 404, trying next variant", url);
     lastResp = resp;
   }
   // Если все варианты дали 404 — вернём последний ответ (для диагностики)
@@ -121,11 +134,11 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
       body: JSON.stringify(payload),
     };
 
-    console.debug("[PATCH] try", `/api/files/${file.id}`, "payload:", payload);
+    debugDev("[PATCH] try", `/api/files/${file.id}`, "payload:", payload);
     const resp = await smartDetailFetch(file.id, init);
     if (!resp.ok) {
       const txt = await resp.text().catch(() => "");
-      console.error("[PATCH] status =", resp.status, "body =", txt.slice(0, 400));
+      errorDev("[PATCH] status =", resp.status, "body =", txt.slice(0, 400));
       throw new Error(`PATCH failed: ${resp.status} ${txt}`);
     }
     return (await resp.json()) as FileItem;
@@ -133,7 +146,7 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
 
   // ----- Переименование -----
   const handleRenameSave = async (draft?: string) => {
-    console.log("RENAME_SAVE_START", { draft, nameDraft, original: file.original_name });
+    logDev("RENAME_SAVE_START", { draft, nameDraft, original: file.original_name });
     const candidate = draft ?? nameDraft;
     const finalName = keepExtension(candidate, file.original_name);
 
@@ -144,12 +157,12 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
     }
     setBusy(true);
     try {
-      console.log("RENAME_SAVE", { id: file.id, finalName });
+      logDev("RENAME_SAVE", { id: file.id, finalName });
       const updated = await patchFile({ original_name: finalName });
       onFileUpdated(updated);
       setIsEditingName(false);
     } catch (e) {
-      console.error(e);
+      errorDev(e as any);
       alert("Не удалось переименовать файл");
     } finally {
       setBusy(false);
@@ -165,7 +178,7 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
       onFileUpdated(updated);
       setIsEditingComment(false);
     } catch (e) {
-      console.error(e);
+      errorDev(e as any);
       alert("Не удалось сохранить комментарий");
     } finally {
       setBusy(false);
@@ -189,28 +202,29 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
         credentials: "include",
       };
 
-      console.debug("[DELETE] try", `/api/files/${file.id}/delete`);
+      debugDev("[DELETE] try", `/api/files/${file.id}/delete`);
       let resp = await smartActionFetch(file.id, "delete", init);
       if (!resp.ok) {
         const txt = await resp.text().catch(() => "");
-        console.error("[DELETE] status =", resp.status, "body =", txt.slice(0, 400));
+        errorDev("[DELETE] status =", resp.status, "body =", txt.slice(0, 400));
         throw new Error(`DELETE failed: ${resp.status}`);
       }
       onFileDeleted(file.id);
     } catch (e) {
-      console.error(e);
+      errorDev(e as any);
       alert("Не удалось удалить файл");
     } finally {
       setBusy(false);
     }
   };
 
+
   // ----- Публичные ссылки -----
   const issuePublicLink = async (): Promise<{ url: string; token: string }> => {
-    const token = await ensureCsrf();
+    const csrfToken = await ensureCsrf();
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      "X-CSRFToken": token,
+      "X-CSRFToken": csrfToken,
       "X-Requested-With": "XMLHttpRequest",
     };
     const init: RequestInit = {
@@ -219,15 +233,22 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
       credentials: "include",
     };
 
-    console.debug("[PUBLIC LINK] issue");
+    debugDev("[PUBLIC LINK] issue");
     const resp = await smartActionFetch(file.id, "public-link", init);
     if (!resp.ok) {
       const txt = await resp.text().catch(() => "");
-      console.error("[PUBLIC LINK] issue status =", resp.status, "body =", txt.slice(0, 400));
+      errorDev("[PUBLIC LINK] issue status =", resp.status, "body =", txt.slice(0, 400));
       throw new Error(`Issue link failed: ${resp.status} ${txt}`);
     }
-    return (await resp.json()) as { url: string; token: string };
+
+    const data = await resp.json();
+    const linkToken = (data.token ?? data.public_token) as string | undefined;
+    if (!linkToken) throw new Error("Сервер не вернул токен публичной ссылки");
+
+    const url = (data.url as string | undefined) ?? `${location.origin}/d/${linkToken}`;
+    return { url, token: linkToken };
   };
+
 
   const revokePublicLink = async () => {
     const token = await ensureCsrf();
@@ -242,43 +263,54 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
       credentials: "include",
     };
 
-    console.debug("[PUBLIC LINK] revoke");
+    debugDev("[PUBLIC LINK] revoke");
     const resp = await smartActionFetch(file.id, "public-link/delete", init);
     if (!resp.ok) {
       const txt = await resp.text().catch(() => "");
-      console.error("[PUBLIC LINK] revoke status =", resp.status, "body =", txt.slice(0, 400));
+      errorDev("[PUBLIC LINK] revoke status =", resp.status, "body =", txt.slice(0, 400));
       throw new Error(`Revoke link failed: ${resp.status} ${txt}`);
     }
   };
 
   const handleCreateOrCopyLink = async () => {
     try {
-      let url: string;
-      let tokenValue: string | null | undefined = file.public_token;
+      const isCreating = !file.has_public_link || !file.public_token;
 
-      if (!file.has_public_link || !file.public_token) {
-        // Создаём (или получаем уже существующую) и копируем
-        const data = await issuePublicLink();
-        url = data.url;
-        tokenValue = data.token;
-        // Обновим родителя — чтобы сразу отрисовалось "Скопировать ссылку"
+      if (isCreating) {
+        // Создаём ссылку и сразу работаем с url из ответа
+        const { url, token } = await issuePublicLink();
+
+        // Обновляем состояние родителя: теперь у файла есть публичная ссылка
         onFileUpdated({
           ...file,
           has_public_link: true,
-          public_token: data.token,
+          public_token: token,
         });
-      } else {
-        // Уже есть — просто соберём URL
-        url = `${location.origin}/d/${file.public_token}`;
+
+        // Пытаемся скопировать — если нельзя, просто покажем адрес
+        try {
+          await navigator.clipboard.writeText(url);
+          alert("Ссылка создана и скопирована: " + url);
+        } catch {
+          alert("Ссылка создана: " + url);
+        }
+        return;
       }
 
-      await navigator.clipboard.writeText(url);
-      alert("Ссылка скопирована: " + url);
+      // Ссылка уже есть — просто копируем существующий адрес
+      const url = `${location.origin}/d/${file.public_token}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        alert("Ссылка скопирована: " + url);
+      } catch {
+        alert("Ссылка: " + url);
+      }
     } catch (e) {
-      console.error(e);
+      errorDev(e as any);
       alert("Не удалось создать/скопировать ссылку");
     }
   };
+
 
   const handleRevokeLink = async () => {
     if (!confirm("Удалить публичную ссылку?")) return;
@@ -291,7 +323,7 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
         public_token: null,
       });
     } catch (e) {
-      console.error(e);
+      errorDev(e as any);
       alert("Не удалось удалить ссылку");
     } finally {
       setBusy(false);
@@ -341,7 +373,7 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                console.log("RENAME_BTN_CLICK");
+                logDev("RENAME_BTN_CLICK");
                 handleRenameSave();
               }}
               disabled={busy}
@@ -385,6 +417,9 @@ const FileRow: React.FC<Props> = ({ file, onFileUpdated, onFileDeleted }) => {
 
       {/* Дата загрузки */}
       <td>{new Date(file.uploaded_at).toLocaleString()}</td>
+
+      {/* Дата скачивания */}
+      <td>{file.last_downloaded_at ? new Date(file.last_downloaded_at).toLocaleString() : "—"}</td>
 
       {/* Комментарий */}
       <td>

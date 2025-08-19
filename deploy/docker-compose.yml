@@ -28,7 +28,8 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: mycloud.settings.prod
       DATABASE_URL: postgres://mycloud:mycloud@db:5432/mycloud
-    volumes: []
+    volumes:
+      - webroot:/usr/share/nginx/html
     healthcheck:
       test:
         [
@@ -50,17 +51,10 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      # Источник конфигурации nginx
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-
-      # Корень фронта (index.html, assets/, styles.css)
       - webroot:/usr/share/nginx/html
-
-      # Сертификаты Let's Encrypt
       - /etc/letsencrypt:/etc/letsencrypt:ro
-
-      # Каталог для http-01 challenge
-      - ./certbot/www:/usr/share/nginx/html/.well-known/acme-challenge
+      - ./certbot/www:/var/www/certbot
 
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/health || exit 1"]
