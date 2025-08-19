@@ -11,6 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
+
 WORKDIR /srv/app
 
 # --- Офлайн wheelhouse и requirements ---
@@ -34,3 +35,10 @@ COPY --from=fe /app/dist/ /usr/share/nginx/html/
 # RUN python manage.py collectstatic --noinput
 
 CMD ["gunicorn", "mycloud.wsgi:application", "--bind", "0.0.0.0:8000"]
+
+
+# ---------- 3) Final stage: Nginx ----------
+FROM nginx:1.27-alpine AS nginx
+COPY --from=fe /app/dist /usr/share/nginx/html
+COPY deploy/nginx/nginx.conf /etc/nginx/nginx.conf
+
