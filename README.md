@@ -78,6 +78,20 @@ docker compose run --rm backend python manage.py test -v 2
 [![CI (unit tests)](https://github.com/Letruke-007/diplom/actions/workflows/ci.yml/badge.svg)](https://github.com/Letruke-007/diplom/actions/workflows/ci.yml)  
 [![CI (docker tests)](https://github.com/Letruke-007/diplom/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/Letruke-007/diplom/actions/workflows/docker-ci.yml)
 
+## 🌐 Демонстрация
+
+Проект развернут на сервере и доступен по адресу:  
+👉 [https://mycloud-diploma.duckdns.org](https://mycloud-diploma.duckdns.org)
+
+- API доступен по адресу: `https://mycloud-diploma.duckdns.org/api/`
+- Админка Django: `https://mycloud-diploma.duckdns.org/admin/`
+- Клиентский интерфейс: `https://mycloud-diploma.duckdns.org/`
+
+Для публичной проверки можно:
+1. Зарегистрировать нового пользователя.
+2. Загрузить файл.
+3. Сгенерировать публичную ссылку.
+4. Скачать файл по токену вида `https://mycloud-diploma.duckdns.org/d/<token>`.
 
 ## 🚀 Deployment
 
@@ -107,5 +121,6 @@ docker compose run --rm backend python manage.py test -v 2
    ```
 
 Теперь приложение доступно по адресу сервера (например, `https://mycloud.example.com`).
+
 
 
