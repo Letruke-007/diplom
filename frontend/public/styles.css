@@ -1,0 +1,337 @@
+/* Палитра и базовые переменные */
+:root{
+  --brand: #0061ff;
+  --brand-hover: #0051d6;
+  --bg: #f7f9fb;
+  --panel: #ffffff;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --border-strong: #d5d9df;
+  --table-head: #f0f3f6;
+  --text: #1f2937;
+  --danger: #e11d48;
+  --focus: #60a5fa;
+  --radius: 10px;
+  --shadow: 0 6px 20px rgba(0,0,0,.06);
+}
+
+/* Сброс по-минимуму и типографика */
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ссылки */
+a{
+  color: var(--brand);
+  text-decoration: none;
+}
+a:hover{ text-decoration: underline; }
+
+/* Заголовки и контейнер по умолчанию */
+#root > div{
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+h1,h2{
+  margin: 0 0 16px 0;
+  line-height: 1.25;
+}
+p{ margin: 0 0 12px 0; color: #374151; }
+
+/* Карточки/панели */
+.panel{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ======= Таблицы (Files, Admin и т.п.) — базовая «ровная» раскладка ======= */
+table{
+  width: 100%;
+  table-layout: fixed;            /* фиксированная сетка по ширине столбцов */
+  border-collapse: collapse;
+  background: var(--panel);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+thead th{
+  background: var(--table-head);
+  font-weight: 600;
+  color: #111827;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-strong);
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+tbody td{
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+tbody tr:hover{
+  background: #f8fbff;
+}
+
+/* ВАЖНО: убрали прежний хак с table { display:block } — он ломал выравнивание */
+table thead, table tbody, table tr{
+  display: table-row-group; /* пусть браузер управляет потоком, это ровнее всего */
+}
+table tr{ display: table-row; }
+
+/* Выравнивание числовых/кратких колонок — часто 2,3,5,6 */
+table td:nth-child(2),
+table td:nth-child(3),
+table td:nth-child(5),
+table td:nth-child(6),
+table th:nth-child(2),
+table th:nth-child(3),
+table th:nth-child(5),
+table th:nth-child(6){
+  text-align: center;
+}
+
+/* Чекбоксы (Admin) */
+input[type="checkbox"]{
+  width: 18px; height: 18px;
+  accent-color: var(--brand);
+  cursor: pointer;
+}
+
+/* ======= Кнопки ======= */
+button, .btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--brand);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s ease, box-shadow .15s ease, transform .02s ease;
+  user-select: none;
+}
+button:hover, .btn:hover{ background: var(--brand-hover); }
+button:active, .btn:active{ transform: translateY(1px); }
+button:disabled, .btn:disabled{
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* Вторичная кнопка */
+.btn--secondary{
+  color: #111827;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+.btn--secondary:hover{
+  background: #e0e7ff;
+}
+
+/* Опасные действия */
+.btn--danger{ background: var(--danger); }
+.btn--danger:hover{ filter: brightness(.95); }
+
+/* ======= Формы (Login/Register) ======= */
+form{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+label{
+  display: block;
+  font-size: 13px;
+  color: #111827;
+  margin: 10px 0 6px 0;
+}
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input:not([type]){
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+input:focus{
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgba(96,165,250,.25);
+}
+input::placeholder{ color: #9ca3af; }
+
+/* Сообщения об ошибках */
+.error, .form-error{
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 8px 0 12px;
+}
+
+/* Подписи/подсказки */
+.help{ font-size: 12px; color: var(--muted); }
+
+/* ======= Зона загрузки ======= */
+.upload-box{
+  border: 2px dashed #bfd3ff;
+  background: #f7fbff;
+  border-radius: var(--radius);
+  padding: 28px;
+  text-align: center;
+  color: #1f2a44;
+  transition: background .15s ease, border-color .15s ease;
+}
+.upload-box:hover{ background: #eef6ff; border-color: #9bbcff; }
+
+/* ======= Хедер ======= */
+.header{
+  position: sticky; top: 0; z-index: 10;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.04);
+}
+.header__inner{
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; gap: 14px; justify-content: space-between;
+}
+.brand{ display: inline-flex; align-items: center; gap: 10px; font-weight: 800; color: #0b1732; letter-spacing: .2px; }
+.brand__dot{ width: 10px; height: 10px; border-radius: 50%; background: var(--brand); }
+
+/* ======= Ютилити ======= */
+.mt-8{ margin-top: 8px; } .mt-12{ margin-top: 12px; } .mt-16{ margin-top: 16px; }
+.w-full{ width: 100%; }
+.max-w-420{ max-width: 420px; } .max-w-480{ max-width: 480px; }
+.center{ margin-left:auto; margin-right:auto; }
+
+::-webkit-scrollbar{ height: 10px; width: 10px; }
+::-webkit-scrollbar-thumb{ background: #c7d2fe; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover{ background: #b4c1fd; }
+
+/* Системные фокусы */
+:focus-visible{
+  outline: 3px solid rgba(96,165,250,.55);
+  outline-offset: 2px;
+}
+
+/* Кнопка «Обновить» */
+button + button{ margin-left: 8px; }
+
+/* =======================================================
+   Таблица файлов как CSS Grid (ровные колонки)
+   <table class="files-table">...</table>
+   ======================================================= */
+
+table.files-table{
+  display: grid !important;               /* единая сетка для шапки и строк */
+  grid-template-columns:
+    1.7fr   /* Имя файла */
+    0.5fr   /* Размер */
+    1.0fr   /* Загружен */
+    1.3fr   /* Комментарий */
+    1.0fr   /* Публичная ссылка */
+    1.0fr;  /* Действия */
+  gap: 0;
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  align-items: center;                     /* вертикально по центру всё */
+}
+
+table.files-table thead,
+table.files-table tbody,
+table.files-table tr{
+  display: contents !important;            /* строки «растворяются» в гриде */
+}
+
+table.files-table th,
+table.files-table td{
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  align-self: stretch;                     /* высота строки единая */
+  display: flex;                           /* фиксируем поведение содержимого */
+  align-items: center;                     /* центруем по вертикали */
+  gap: 8px;
+}
+
+/* Шапка */
+table.files-table thead th{
+  background: var(--table-head);
+  font-weight: 600;
+  color: #111827;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+/* Колонки: выравнивание по содержанию */
+table.files-table th:nth-child(2),
+table.files-table td:nth-child(2),
+table.files-table th:nth-child(3),
+table.files-table td:nth-child(3),
+table.files-table th:nth-child(5),
+table.files-table td:nth-child(5),
+table.files-table th:nth-child(6),
+table.files-table td:nth-child(6){
+  justify-content: center;                 /* центр для коротких полей/кнопок */
+  text-align: center;
+}
+
+/* Имя файла — допускаем перенос длинных имён */
+table.files-table td:nth-child(1){
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Колонка «Действия»: кнопки красиво выровнены и не расползаются */
+table.files-table td:nth-child(6){
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Ховер строк — имитируем по ячейкам */
+table.files-table tbody td{ background: transparent; }
+table.files-table tbody tr:hover > td{ background: #f8fbff; }
+
+/* Адаптив: если уж очень узко — позволяем горизонтальный скролл
+   (только для .files-table, чтобы не ломать другие таблицы) */
+@media (max-width: 640px){
+  table.files-table{
+    display: block !important;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  table.files-table thead,
+  table.files-table tbody,
+  table.files-table tr{
+    display: table !important;
+    width: 100%;
+    table-layout: fixed;
+  }
+}
