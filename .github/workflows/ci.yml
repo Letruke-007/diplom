@@ -21,9 +21,25 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
+          --health-interval=5s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
+
+    env:
+      # <<< ВАЖНО: подсказываем Django, куда подключаться >>>
+      DB_NAME: mycloud
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      # на всякий случай — если проект читает эти имена:
+      POSTGRES_DB: mycloud
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      # если у тебя есть DJANGO_SETTINGS_MODULE — можно указать:
+      # DJANGO_SETTINGS_MODULE: mycloud.settings
 
     steps:
       - uses: actions/checkout@v4
@@ -37,15 +53,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements/prod.txt
 
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U postgres; then
+              echo "Postgres is ready"; break
+            fi
+            echo "Waiting for Postgres... ($i)"; sleep 2
+          done
+
+      - name: Show env (debug)
+        run: |
+          echo "DB_HOST=$DB_HOST DB_PORT=$DB_PORT DB_NAME=$DB_NAME"
+
       - name: Migrate
         working-directory: backend
-        run: python manage.py migrate
+        run: python manage.py migrate --noinput
 
       - name: Run tests (explicit modules)
         working-directory: backend
-        run: |
-          python manage.py test \
-            accounts.tests.test_auth \
-            storageapp.tests.test_files \
-            accounts.tests.test_admin_api \
-            --pattern="test_*.py" -v 2
+        run: python manage.py test accounts.tests.test_auth storageapp.tests.test_files accounts.tests.test_admin_api -v 2
