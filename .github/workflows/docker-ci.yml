@@ -41,15 +41,11 @@ jobs:
 
       - name: Run migrations (inside backend container)
         working-directory: deploy
-        run: docker compose run --rm backend python manage.py migrate
+        run: docker compose run --rm backend python manage.py migrate --noinput
 
       - name: Run tests (inside backend container)
         working-directory: deploy
-        run: docker compose run --rm backend python manage.py test \
-          accounts.tests.test_auth \
-          storageapp.tests.test_files \
-          accounts.tests.test_admin_api \
-          --pattern="test_*.py" -v 2
+        run: docker compose run --rm backend bash -lc 'python manage.py test accounts.tests.test_auth storageapp.tests.test_files accounts.tests.test_admin_api -v 2'
 
       - name: Compose down
         if: always()
