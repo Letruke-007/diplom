@@ -26,20 +26,16 @@ jobs:
           --health-retries=10
 
     env:
-      # <<< ВАЖНО: подсказываем Django, куда подключаться >>>
       DB_NAME: mycloud
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_HOST: localhost
       DB_PORT: "5432"
-      # на всякий случай — если проект читает эти имена:
       POSTGRES_DB: mycloud
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_HOST: localhost
       POSTGRES_PORT: "5432"
-      # если у тебя есть DJANGO_SETTINGS_MODULE — можно указать:
-      # DJANGO_SETTINGS_MODULE: mycloud.settings
 
     steps:
       - uses: actions/checkout@v4
